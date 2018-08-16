@@ -6,6 +6,7 @@ import Modal from '../../components/UI/Modal/Modal'
 import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary'
 import axios from '../../axios'
 import Spinner from '../../components/UI/Spinner/Spinner'
+import withErrorHandler from '../../hoc/withErrorHandler/withWerroHandler'
 
 const INGREDIENT_PRICES = {
     salad : 0.5,
@@ -120,4 +121,4 @@ class BugerBuilder extends Component {
     }
 }
 
-export default BugerBuilder;
+export default withErrorHandler(BugerBuilder, axios);
