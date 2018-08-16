@@ -1,9 +1,11 @@
 import React, {Component} from 'react'
-import Aux from '../../hoc/Aux'
+import Aux from '../../hoc/Aux/Aux'
 import Burger from '../../components/Burger/Burger'
 import BuildControls from '../../components/Burger/BuildControls/BuildControls'
 import Modal from '../../components/UI/Modal/Modal'
 import OrderSummary from '../../components/Burger/OrderSummary/OrderSummary'
+import axios from '../../axios'
+import Spinner from '../../components/UI/Spinner/Spinner'
 
 const INGREDIENT_PRICES = {
     salad : 0.5,
@@ -25,6 +27,7 @@ class BugerBuilder extends Component {
             price: 4,
             purchaseable: false,
             purchasing: false,
+            loading: false
         }
     }
 
@@ -63,22 +66,46 @@ class BugerBuilder extends Component {
     }
 
     continuePurchasingHandler = () => {
-        alert("You continued");
+        const order = {
+            ingredients: this.state.ingredients,
+            price: this.state.price,
+            customer: {
+                name: "Roberto A Lima",
+                address: {
+                    street: "Av. Central", 
+                    zipCode: "71710010",
+                    country: "Brazil"
+                }
+            },
+            deliveryMethod: "fastest"
+        }
+        this.setState({loading: true});
+        axios.post("/order.json", order).then(response => {
+            this.setState({loading: false, purchasing: false});
+        }).catch(error => {
+            this.setState({loading: false});
+        })
     }
 
     render () { 
         const disabledInfo = {...this.state.ingredients}
+        let orderSummary = (
+            <OrderSummary 
+                ingredients={this.state.ingredients}
+                price={this.state.price}
+                cancel={this.cancelPurchasingHandler}
+                continue={this.continuePurchasingHandler}>
+            </OrderSummary>
+        )
+        if (this.state.loading) {
+            orderSummary = <Spinner/>
+        }
         Object.keys(this.state.ingredients).map(key=> disabledInfo[key] =  this.state.ingredients[key] ===0 );
         return  (
             <Aux>
                 <Burger ingredients={this.state.ingredients} />
                 <Modal show={this.state.purchasing} modalClosed={this.cancelPurchasingHandler}>
-                    <OrderSummary 
-                        ingredients={this.state.ingredients}
-                        price={this.state.price}
-                        cancel={this.cancelPurchasingHandler}
-                        continue={this.continuePurchasingHandler}>
-                    </OrderSummary>
+                   {orderSummary} 
                 </Modal>
                 <BuildControls 
                     ingredientAdded={this.addIngredientHandler}
